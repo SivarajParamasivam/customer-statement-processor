@@ -28,8 +28,8 @@ import com.rabo.statementprocesser.model.CustomerData;
  */
 public class StatementProcesser {
 
-	static String readFilePath = "C:\\Users\\lenovo\\Desktop\\sivaraj\\assignment-BE";
-	static String writeFilePath = "C:\\Users\\lenovo\\Desktop\\sivaraj\\assignment-BE\\report\\";
+	static String readFilePath = "C:\\customer-statements";
+	static String writeFilePath = "C:\\customer-statements\\error-report\\";
 
 	public static void main(String[] args) {
 		try {
@@ -43,7 +43,7 @@ public class StatementProcesser {
 						customerInvalidRecords = readCsvFile(file);
 					}
 					if (customerInvalidRecords!= null && customerInvalidRecords.size() > 0) {
-						String path = writeFilePath + file.getName() + "_invalid.csv";
+						String path = writeFilePath + file.getName() + "_error-report.csv";
 						generateReportFile(path, customerInvalidRecords);
 					}
 				}
@@ -78,7 +78,8 @@ public class StatementProcesser {
 				customerData.setMutation(Double.parseDouble(country[4]));
 				customerData.setEndBalance(Double.parseDouble(country[5]));
 
-				if (customerDataList.add(customerData) == true) {
+				if (customerDataList.add(customerData) == true && 
+						(customerData.getStartBalance() + customerData.getMutation() == customerData.getEndBalance())) {
 					customerDataList.add(customerData);
 				} else {
 					customerInvalidRecords.add(customerData);
@@ -124,7 +125,8 @@ public class StatementProcesser {
 				customerData.setEndBalance(
 						Double.parseDouble(childElement.getElementsByTagName("endBalance").item(0).getTextContent()));
 
-				if (customerDataList.add(customerData) == true) {
+				if (customerDataList.add(customerData) == true && 
+						(customerData.getStartBalance() + customerData.getMutation() == customerData.getEndBalance())) {
 					customerDataList.add(customerData);
 				} else {
 					customerInvalidRecords.add(customerData);
