@@ -6,8 +6,8 @@ Which will display both the transaction reference and description of each of the
 # Getting Started
 
   Clone this project from  git - https://github.com/SivarajParamasivam/customer-statement-processor.git
-  Project Clone:
-  git clone https://github.com/SivarajParamasivam/customer-statement-processor.git
+  
+  Project Clone: git clone https://github.com/SivarajParamasivam/customer-statement-processor.git
 
   Then import the project in eclipse and run as java application after placing the required files in the given path and specify the path in the readFilepath and writeFilePath attributes.
 
