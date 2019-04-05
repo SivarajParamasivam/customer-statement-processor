@@ -18,14 +18,15 @@ Which will display both the transaction reference and description of each of the
   Which location the file needs to be read and in which location output file should be generated.
   Examples:
 
-   # readFilePath = "C:\\customer-statements";
-   # writeFilePath = "C:\\customer-statements\\error-report\\";
+   readFilePath = "C:\\customer-statements";
+   writeFilePath = "C:\\customer-statements\\error-report\\";
 
 # Built With
-  •	Core Java
+  •	Core Java 
+  
 # Test
    The Junit Validations is based on the transaction references ID and end balance 
-   
+ 
 # Author
   Sivaraj Paramasivam- complete project  
 
