@@ -36,12 +36,15 @@ public class StatementProcesser {
 			File f = new File(readFilePath);
 			for (File file : f.listFiles()) {
 				if (file.isFile()) {
+					List<CustomerData> customerRecords = null;
 					List<CustomerData> customerInvalidRecords = null;
 					if (file.getName().toLowerCase().endsWith(".xml")) {
-						customerInvalidRecords = readXmlFile(file);
+						customerRecords = readXmlFile(file);
 					} else if (file.getName().toLowerCase().endsWith(".csv")) {
-						customerInvalidRecords = readCsvFile(file);
+						customerRecords = readCsvFile(file);
 					}
+					customerInvalidRecords = validateCustomerRecords(customerRecords); 
+					
 					if (customerInvalidRecords!= null && customerInvalidRecords.size() > 0) {
 						String path = writeFilePath + file.getName() + "_error-report.csv";
 						generateReportFile(path, customerInvalidRecords);
@@ -55,17 +58,16 @@ public class StatementProcesser {
 	}
 
 	/**
-	 * This method is used to read the CSV file and then return the invalid records 
+	 * This method is used to read the CSV file  
 	 * 
 	 * @param filePath
-	 * @return customerInvalidRecord
+	 * @return customerRecords
 	 * @throws IOException
 	 */
 	public static List<CustomerData> readCsvFile(File filePath) throws IOException {
 		BufferedReader br = new BufferedReader(new FileReader(filePath));
 		String line = "";
-		Set<CustomerData> customerDataList = new HashSet<CustomerData>();
-		List<CustomerData> customerInvalidRecords = new ArrayList<CustomerData>();
+		List<CustomerData> customerRecords = new ArrayList<CustomerData>();
 		
 		while ((line = br.readLine()) != null) {
 			String[] country = line.split(",");
@@ -77,32 +79,26 @@ public class StatementProcesser {
 				customerData.setStartBalance(Double.parseDouble(country[3]));
 				customerData.setMutation(Double.parseDouble(country[4]));
 				customerData.setEndBalance(Double.parseDouble(country[5]));
-
-				if (customerDataList.add(customerData) == true && 
-						(customerData.getStartBalance() + customerData.getMutation() == customerData.getEndBalance())) {
-					customerDataList.add(customerData);
-				} else {
-					customerInvalidRecords.add(customerData);
-				}
+				customerRecords.add(customerData);
 			}
+			
 
 		}
-		return customerInvalidRecords;
+		return customerRecords;
 	}
 
 	/**
 	 * This method is used to read XML file and then return the invalid records.
 	 *
 	 * @param filePath
-	 * @return customerInvalidRecord
+	 * @return customerRecords
 	 * @throws ParserConfigurationException
 	 * @throws SAXException
 	 * @throws IOException
 	 */
 	public static List<CustomerData> readXmlFile(File filePath) throws ParserConfigurationException, SAXException, IOException {
 
-		Set<CustomerData> customerDataList = new HashSet<CustomerData>();
-		List<CustomerData> customerInvalidRecords = new ArrayList<CustomerData>();
+		List<CustomerData> customerRecords = new ArrayList<CustomerData>();
 		DocumentBuilderFactory documentBuilderFactory = DocumentBuilderFactory.newInstance();
 		DocumentBuilder documentBuilder = documentBuilderFactory.newDocumentBuilder();
 		Document document = documentBuilder.parse(filePath);
@@ -124,13 +120,29 @@ public class StatementProcesser {
 						Double.parseDouble(childElement.getElementsByTagName("mutation").item(0).getTextContent()));
 				customerData.setEndBalance(
 						Double.parseDouble(childElement.getElementsByTagName("endBalance").item(0).getTextContent()));
+				customerRecords.add(customerData);
 
-				if (customerDataList.add(customerData) == true && 
-						(customerData.getStartBalance() + customerData.getMutation() == customerData.getEndBalance())) {
-					customerDataList.add(customerData);
-				} else {
-					customerInvalidRecords.add(customerData);
-				}
+			}
+		}
+		return customerRecords;
+	}
+
+	
+	/**
+	 *  This method is used to validate the customer data.
+	 * 
+	 * @param customerRecords
+	 * @return List of customerInvalidRecords
+	 */
+	public static List<CustomerData> validateCustomerRecords(List<CustomerData> customerRecords  ){
+		Set<CustomerData> customerDataList = new HashSet<CustomerData>();
+		List<CustomerData> customerInvalidRecords = new ArrayList<CustomerData>();
+		for(CustomerData data:customerRecords){
+			if (customerDataList.add(data) == true && 
+					(data.getStartBalance() + data.getMutation() == data.getEndBalance())) {
+				customerDataList.add(data);
+			} else {
+				customerInvalidRecords.add(data);
 			}
 		}
 		return customerInvalidRecords;
@@ -140,7 +152,7 @@ public class StatementProcesser {
 	 * @param fileName
 	 * @param errorData
 	 */
-	private static void generateReportFile(String fileName, List<CustomerData> errorData) {
+	public static void generateReportFile(String fileName, List<CustomerData> errorData) {
 		FileWriter fWriter = null;
 		try {
 			String[] delimiter  ={"," , "\n"};
