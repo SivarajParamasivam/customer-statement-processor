@@ -43,9 +43,9 @@ public class StatementProcesser {
 					} else if (file.getName().toLowerCase().endsWith(".csv")) {
 						customerRecords = readCsvFile(file);
 					}
-					customerInvalidRecords = validateCustomerRecords(customerRecords); 
-					
-					if (customerInvalidRecords!= null && customerInvalidRecords.size() > 0) {
+					customerInvalidRecords = validateCustomerRecords(customerRecords);
+
+					if (customerInvalidRecords != null && customerInvalidRecords.size() > 0) {
 						String path = writeFilePath + file.getName() + "_error-report.csv";
 						generateReportFile(path, customerInvalidRecords);
 					}
@@ -58,7 +58,7 @@ public class StatementProcesser {
 	}
 
 	/**
-	 * This method is used to read the CSV file  
+	 * This method is used to read the CSV file
 	 * 
 	 * @param filePath
 	 * @return customerRecords
@@ -68,21 +68,20 @@ public class StatementProcesser {
 		BufferedReader br = new BufferedReader(new FileReader(filePath));
 		String line = "";
 		List<CustomerData> customerRecords = new ArrayList<CustomerData>();
-		
+
 		while ((line = br.readLine()) != null) {
-			String[] country = line.split(",");
-			if (!country[0].equals("Reference")) {
+			String[] rowValue = line.split(",");
+			// check to skip the object construction for header node
+			if (!rowValue[0].equals("Reference")) {
 				CustomerData customerData = new CustomerData();
-				customerData.setReference(Integer.parseInt(country[0]));
-				customerData.setAccountNumber(country[1]);
-				customerData.setDescription(country[2]);
-				customerData.setStartBalance(Double.parseDouble(country[3]));
-				customerData.setMutation(Double.parseDouble(country[4]));
-				customerData.setEndBalance(Double.parseDouble(country[5]));
+				customerData.setReference(Integer.parseInt(rowValue[0]));
+				customerData.setAccountNumber(rowValue[1]);
+				customerData.setDescription(rowValue[2]);
+				customerData.setStartBalance(Double.parseDouble(rowValue[3]));
+				customerData.setMutation(Double.parseDouble(rowValue[4]));
+				customerData.setEndBalance(Double.parseDouble(rowValue[5]));
 				customerRecords.add(customerData);
 			}
-			
-
 		}
 		return customerRecords;
 	}
@@ -96,7 +95,8 @@ public class StatementProcesser {
 	 * @throws SAXException
 	 * @throws IOException
 	 */
-	public static List<CustomerData> readXmlFile(File filePath) throws ParserConfigurationException, SAXException, IOException {
+	public static List<CustomerData> readXmlFile(File filePath)
+			throws ParserConfigurationException, SAXException, IOException {
 
 		List<CustomerData> customerRecords = new ArrayList<CustomerData>();
 		DocumentBuilderFactory documentBuilderFactory = DocumentBuilderFactory.newInstance();
@@ -127,19 +127,19 @@ public class StatementProcesser {
 		return customerRecords;
 	}
 
-	
 	/**
-	 *  This method is used to validate the customer data.
+	 * This method is used to validate the customer data.
 	 * 
 	 * @param customerRecords
 	 * @return List of customerInvalidRecords
 	 */
-	public static List<CustomerData> validateCustomerRecords(List<CustomerData> customerRecords  ){
+	public static List<CustomerData> validateCustomerRecords(List<CustomerData> customerRecords) {
 		Set<CustomerData> customerDataList = new HashSet<CustomerData>();
 		List<CustomerData> customerInvalidRecords = new ArrayList<CustomerData>();
-		for(CustomerData data:customerRecords){
-			if (customerDataList.add(data) == true && 
-					(data.getStartBalance() + data.getMutation() == data.getEndBalance())) {
+		for (CustomerData data : customerRecords) {
+			// unique reference id check and end balance validation
+			if (customerDataList.add(data) == true
+					&& (data.getStartBalance() + data.getMutation() == data.getEndBalance())) {
 				customerDataList.add(data);
 			} else {
 				customerInvalidRecords.add(data);
@@ -149,36 +149,37 @@ public class StatementProcesser {
 	}
 
 	/**
+	 * This method is used to write the csv file for error records
+	 * 
 	 * @param fileName
 	 * @param errorData
 	 */
 	public static void generateReportFile(String fileName, List<CustomerData> errorData) {
-		FileWriter fWriter = null;
+		FileWriter csvWriter = null;
 		try {
-			String[] delimiter  ={"," , "\n"};
-			fWriter = new FileWriter(fileName);
-			// column headers  
-			fWriter.append("Transaction reference");
-			fWriter.append(delimiter[0]);
-			fWriter.append("Description ");
-			fWriter.append(delimiter[1]);
+			String[] delimiter = { ",", "\n" };
+			csvWriter = new FileWriter(fileName);
+			// column headers
+			csvWriter.append("Transaction reference");
+			csvWriter.append(delimiter[0]);
+			csvWriter.append("Description ");
+			csvWriter.append(delimiter[1]);
 			for (CustomerData data : errorData) {
-				fWriter.append(Integer.toString(data.getReference()));
-				fWriter.append(delimiter[0]);
-				fWriter.append(data.getDescription());
-				fWriter.append(delimiter[1]);
+				csvWriter.append(Integer.toString(data.getReference()));
+				csvWriter.append(delimiter[0]);
+				csvWriter.append(data.getDescription());
+				csvWriter.append(delimiter[1]);
 			}
-			 System.out.println("ReportFile CSV file is created...");
+			System.out.println("ReportFile CSV file is created...");
 		} catch (IOException e) {
 			e.printStackTrace();
 		} finally {
 			try {
-				fWriter.flush();
-				fWriter.close();
+				csvWriter.flush();
+				csvWriter.close();
 			} catch (IOException e) {
 				e.printStackTrace();
 			}
 		}
 	}
-
 }
